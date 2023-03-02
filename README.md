@@ -11,5 +11,7 @@ The following .py files are included in this project:
 ## Citation
 If you use this code for your research, please cite the following papers:
 
+## Visualization
+The project includes a Tableau dashboard to visualize the results. The dashboard can be accessed using the following link: http://sepehr.people.ua.edu/data-analytics-dashboard.html
 - Karimiziarani, M., W. Shao, M. Mirzaei, and H. Moradkhani (2023), Toward Reduction of Detrimental Effects of Hurricanes using a Social Media Data Analytic Approach: How Climate Change is perceived?, Climate Risk Management, doi:10.1016/j.crm.2023.100480
 - Karimiziarani, M., Jafarzadegan, K., Abbaszadeh, P., Shao, W., H. Moradkhani (2022), Hazard Risk Awareness and Disaster Management: Extracting the Information Content of Twitter Data, Sustainable Cities and Society, doi:10.1016/j.scs.2021.103577.
