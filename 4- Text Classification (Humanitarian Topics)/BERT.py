@@ -1,10 +1,8 @@
 import pandas as pd
 import numpy as np
 from transformers import BertTokenizer, TFBertForSequenceClassification
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.optimizers import Adam
-from sklearn.model_selection import KFold
 from transformers import AdamW
 from joblib import Parallel, delayed
 import tensorflow as tf
@@ -31,9 +29,6 @@ X_tokenized = [tokenize_text(text) for text in X]
 # Convert labels to categorical
 Y = pd.get_dummies(df['Label']).values
 
-# Split data into training and test sets
-X_train, X_test, Y_train, Y_test = train_test_split(X_tokenized, Y, test_size=0.10)
-
 # Define BERT model
 model = TFBertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=6)
 
@@ -44,31 +39,50 @@ model.compile(optimizer=optimizer, loss=tf.keras.losses.CategoricalCrossentropy(
 # Setup early stopping
 early_stopping = EarlyStopping(monitor='val_loss', patience=3, min_delta=0.0001)
 
-# Train model
-epochs = 6
-batch_size = 32
-history = model.fit(
-    [x['input_ids'] for x in X_train], Y_train, 
-    validation_split=0.1, 
-    epochs=epochs, 
-    batch_size=batch_size, 
-    callbacks=[early_stopping]
-)
+# Cross-validation setup
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
-# Evaluate model
-loss, accuracy = model.evaluate([x['input_ids'] for x in X_test], Y_test)
-print(f'Test set\n  Loss: {loss:.3f}\n  Accuracy: {accuracy:.3f}')
+accuracies = []
+fold = 1
 
-# Define function to predict the label for a given text
+# 5-fold cross-validation
+for train_index, val_index in kf.split(X_tokenized):
+    print(f"Training fold {fold}...")
+    
+    X_train = [X_tokenized[i] for i in train_index]
+    X_val = [X_tokenized[i] for i in val_index]
+    Y_train, Y_val = Y[train_index], Y[val_index]
+    
+    # Train model
+    history = model.fit(
+        [x['input_ids'] for x in X_train], Y_train, 
+        validation_data=([x['input_ids'] for x in X_val], Y_val),
+        epochs=6, 
+        batch_size=32, 
+        callbacks=[early_stopping]
+    )
+    
+    # Evaluate model on validation set
+    loss, accuracy = model.evaluate([x['input_ids'] for x in X_val], Y_val)
+    print(f"Fold {fold} - Loss: {loss:.3f}, Accuracy: {accuracy:.3f}")
+    accuracies.append(accuracy)
+    fold += 1
+
+# Final results
+mean_accuracy = np.mean(accuracies)
+std_dev = np.std(accuracies)
+print(f"Mean Accuracy: {mean_accuracy:.3f} (SD: {std_dev:.3f})")
+
+# Apply model to full dataset
+twitter_dataset = pd.read_csv('Campfire_State_Preprocess.csv')
+
+# Function to predict label for each tweet
 def predict_label(text):
     inputs = tokenizer(text, return_tensors="tf", padding="max_length", max_length=128, truncation=True)
     logits = model(inputs)
     pred = tf.argmax(logits.logits, axis=1).numpy()
     labels = ['caution_and_advice', 'displaced_people_and_evacuations', 'help_donation_recovery', 'infrastructure_and_utility_damage', 'injured_or_dead_people', 'other_relevant_information', 'sympathy_and_support']
     return labels[pred[0]]
-
-# Load the Twitter dataset
-twitter_dataset = pd.read_csv('Campfire_State_Preprocess.csv')
 
 # Parallelize predictions using joblib
 labels = Parallel(n_jobs=-1)(delayed(predict_label)(row['Text_Stop']) for index, row in twitter_dataset.iterrows() if isinstance(row['Text_Stop'], str))
