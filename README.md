@@ -8,10 +8,4 @@ The following .py files are included in this project:
 - `LocationMapping.py`: This script can be used for mapping Twitter users to their geographic locations based on their profile - information. It includes functions for geocoding user locations and for visualizing the distribution of users on a map.
 - `Preprocessing.py`: This script can be used for preprocessing Twitter data before conducting further analysis. It includes functions for cleaning and filtering tweets, removing URLs and special characters, and extracting relevant information such as hashtags, mentions, and URLs.
 - `HumanitarianTopics_BERT_Torch.py`: This script trains and evaluates a BERT classifier to classify disaster related Tweets into Humanitarian classes.
-## Visualization
-The project includes a Tableau dashboard to visualize the results. The dashboard can be accessed using the following link: http://sepehr.people.ua.edu/data-analytics-dashboard.html
-## Citation
-If you use this code for your research, please cite the following papers:
 
-- Karimiziarani, M., W. Shao, M. Mirzaei, and H. Moradkhani (2023), Toward Reduction of Detrimental Effects of Hurricanes using a Social Media Data Analytic Approach: How Climate Change is perceived?, Climate Risk Management, doi:10.1016/j.crm.2023.100480
-- Karimiziarani, M., Jafarzadegan, K., Abbaszadeh, P., Shao, W., H. Moradkhani (2022), Hazard Risk Awareness and Disaster Management: Extracting the Information Content of Twitter Data, Sustainable Cities and Society, doi:10.1016/j.scs.2021.103577.
